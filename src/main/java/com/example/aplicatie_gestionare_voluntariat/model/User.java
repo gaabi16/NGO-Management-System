@@ -1,34 +1,14 @@
 package com.example.aplicatie_gestionare_voluntariat.model;
 
-import jakarta.persistence.*;
-
-@Entity
-@Table(name = "users")
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id_user;
-
-    @Column(nullable = false, unique = true)
     private String email;
-
-    @Column(name = "password_hash", nullable = false)
     private String passwordHash;
-
-    @Transient
-    private String password;
-
-    @Column(nullable = false)
+    private String password; // câmp temporar pentru înregistrare
     private String first_name;
-
-    @Column(nullable = false)
     private String last_name;
-
     private String phone_number;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Role role;
 
     public enum Role {

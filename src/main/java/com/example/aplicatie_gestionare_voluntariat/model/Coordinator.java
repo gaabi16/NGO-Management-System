@@ -1,38 +1,16 @@
 package com.example.aplicatie_gestionare_voluntariat.model;
 
-import jakarta.persistence.*;
-
-@Entity
-@Table(name = "coordinators")
 public class Coordinator {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_coordinator")
     private Integer idCoordinator;
-
-    @Column(name = "id_user", nullable = false, unique = true)
     private Integer idUser;
-
-    @Column(name = "id_ong", nullable = false)
     private Integer idOng;
-
-    @Column(length = 100)
     private String department;
-
-    @Column(name = "experience_years")
     private Integer experienceYears;
-
-    @Column(name = "employment_type", length = 50)
     private String employmentType;
 
-    // Relații opționale pentru afișare
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_user", insertable = false, updatable = false)
+    // Relații pentru afișare
     private User user;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_ong", insertable = false, updatable = false)
     private Ong ong;
 
     // Constructori

@@ -1,36 +1,16 @@
 package com.example.aplicatie_gestionare_voluntariat.model;
 
-import jakarta.persistence.*;
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "ongs")
 public class Ong {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_ong")
     private Integer idOng;
-
-    @Column(nullable = false, length = 100)
     private String name;
-
-    @Column(columnDefinition = "TEXT")
     private String description;
-
-    @Column(length = 200)
     private String address;
-
-    @Column(name = "registration_number", unique = true, length = 50)
     private String registrationNumber;
-
-    @Column(length = 20)
     private String phone;
-
-    @Column(length = 100)
     private String email;
-
-    @Column(name = "founding_date")
     private LocalDate foundingDate;
 
     // Constructori

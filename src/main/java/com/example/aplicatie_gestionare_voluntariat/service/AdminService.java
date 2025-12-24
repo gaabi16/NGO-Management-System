@@ -7,7 +7,6 @@ import com.example.aplicatie_gestionare_voluntariat.repository.CoordinatorReposi
 import com.example.aplicatie_gestionare_voluntariat.repository.OngRepository;
 import com.example.aplicatie_gestionare_voluntariat.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,14 +24,14 @@ public class AdminService {
     private CoordinatorRepository coordinatorRepository;
 
     public List<User> getFirst5Users() {
-        return userRepository.findAll(PageRequest.of(0, 5)).getContent();
+        return userRepository.findAll(5, 0);
     }
 
     public List<Ong> getFirst5Ongs() {
-        return ongRepository.findAll(PageRequest.of(0, 5)).getContent();
+        return ongRepository.findAll(5, 0);
     }
 
     public List<Coordinator> getFirst5Coordinators() {
-        return coordinatorRepository.findAll(PageRequest.of(0, 5)).getContent();
+        return coordinatorRepository.findAll(5, 0);
     }
 }
