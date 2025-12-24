@@ -7,7 +7,11 @@ import com.example.aplicatie_gestionare_voluntariat.repository.CoordinatorReposi
 import com.example.aplicatie_gestionare_voluntariat.repository.OngRepository;
 import com.example.aplicatie_gestionare_voluntariat.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,6 +28,10 @@ public class AdminService {
     @Autowired
     private CoordinatorRepository coordinatorRepository;
 
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
+    // Metodele vechi pentru compatibilitate
     public List<User> getFirst5Users() {
         return userRepository.findAll(PageRequest.of(0, 5)).getContent();
     }
@@ -34,5 +42,50 @@ public class AdminService {
 
     public List<Coordinator> getFirst5Coordinators() {
         return coordinatorRepository.findAll(PageRequest.of(0, 5)).getContent();
+    }
+
+    // Metode noi pentru paginare
+    public Page<User> getUsersPage(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("idUser").ascending());
+        return userRepository.findAll(pageable);
+    }
+
+    // CRUD pentru Users
+    public User createUser(User user) {
+        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+            user.setPasswordHash(passwordEncoder.encode(user.getPassword()));
+        }
+        return userRepository.save(user);
+    }
+
+    public User getUserById(Integer id) {
+        return userRepository.findById(id).orElse(null);
+    }
+
+    public User updateUser(Integer id, User updatedUser) {
+        User existingUser = userRepository.findById(id).orElse(null);
+        if (existingUser != null) {
+            existingUser.setEmail(updatedUser.getEmail());
+            existingUser.setFirst_name(updatedUser.getFirst_name());
+            existingUser.setLast_name(updatedUser.getLast_name());
+            existingUser.setPhone_number(updatedUser.getPhone_number());
+            existingUser.setRole(updatedUser.getRole());
+
+            // Actualizează parola doar dacă este furnizată
+            if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
+                existingUser.setPasswordHash(passwordEncoder.encode(updatedUser.getPassword()));
+            }
+
+            return userRepository.save(existingUser);
+        }
+        return null;
+    }
+
+    public boolean deleteUser(Integer id) {
+        if (userRepository.existsById(id)) {
+            userRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }
