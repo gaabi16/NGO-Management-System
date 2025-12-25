@@ -208,9 +208,15 @@
             color: white;
         }
 
-        .btn-delete:hover {
+        .btn-delete:hover:not(:disabled) {
             background: #c82333;
             transform: translateY(-1px);
+        }
+
+        .btn-delete:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.6;
         }
 
         /* Pagination */
@@ -505,8 +511,19 @@
                     </td>
                     <td>
                         <div class="action-buttons">
-                            <button class="btn-edit" th:onclick="'openEditModal(' + ${user.id_user} + ')'">✏️ Edit</button>
-                            <button class="btn-delete" th:onclick="'confirmDelete(' + ${user.id_user} + ')'">🗑️ Delete</button>
+                            <button class="btn-edit"
+                                    th:data-user-id="${user.id_user}"
+                                    onclick="openEditModal(this.getAttribute('data-user-id'))">
+                                ✏️ Edit
+                            </button>
+                            <button class="btn-delete"
+                                    th:data-user-id="${user.id_user}"
+                                    th:data-user-email="${user.email}"
+                                    th:disabled="${user.email == currentUserEmail}"
+                                    th:title="${user.email == currentUserEmail} ? 'You cannot delete your own account' : 'Delete user'"
+                                    onclick="confirmDelete(this.getAttribute('data-user-id'), this.getAttribute('data-user-email'))">
+                                🗑️ Delete
+                            </button>
                         </div>
                     </td>
                 </tr>
@@ -724,7 +741,11 @@
     </div>
 </div>
 
-<script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var currentUserEmail = /*[[${currentUserEmail}]]*/ '';
+    /*]]>*/
+
     // Create Modal
     function openCreateModal() {
         document.getElementById('createModal').style.display = 'block';
@@ -754,7 +775,12 @@
     }
 
     // Delete Confirmation
-    function confirmDelete(userId) {
+    function confirmDelete(userId, userEmail) {
+        if (userEmail === currentUserEmail) {
+            alert('⚠️ You cannot delete your own account!');
+            return;
+        }
+
         if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
             const form = document.createElement('form');
             form.method = 'POST';
