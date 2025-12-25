@@ -66,9 +66,9 @@ public class AdminService {
         User existingUser = userRepository.findById(id).orElse(null);
         if (existingUser != null) {
             existingUser.setEmail(updatedUser.getEmail());
-            existingUser.setFirst_name(updatedUser.getFirst_name());
-            existingUser.setLast_name(updatedUser.getLast_name());
-            existingUser.setPhone_number(updatedUser.getPhone_number());
+            existingUser.setFirstName(updatedUser.getFirstName());
+            existingUser.setLastName(updatedUser.getLastName());
+            existingUser.setPhoneNumber(updatedUser.getPhoneNumber());
             existingUser.setRole(updatedUser.getRole());
 
             // Actualizează parola doar dacă este furnizată
@@ -81,11 +81,18 @@ public class AdminService {
         return null;
     }
 
-    public boolean deleteUser(Integer id) {
-        if (userRepository.existsById(id)) {
-            userRepository.deleteById(id);
-            return true;
+    public boolean deleteUser(Integer id, String currentUserEmail) {
+        User userToDelete = userRepository.findById(id).orElse(null);
+        if (userToDelete == null) {
+            return false;
         }
-        return false;
+
+        // Verifică dacă adminul încearcă să se șteargă pe sine
+        if (userToDelete.getEmail().equals(currentUserEmail)) {
+            throw new IllegalStateException("You cannot delete your own account!");
+        }
+
+        userRepository.deleteById(id);
+        return true;
     }
 }

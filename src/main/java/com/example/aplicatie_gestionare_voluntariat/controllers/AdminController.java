@@ -31,6 +31,7 @@ public class AdminController {
         }
 
         model.addAttribute("currentView", view);
+        model.addAttribute("currentUserEmail", authentication.getName());
 
         // Încarcă datele în funcție de parametrul view
         if ("users".equals(view)) {
@@ -45,6 +46,7 @@ public class AdminController {
             System.out.println("Total users: " + usersPage.getTotalElements());
             System.out.println("Total pages: " + usersPage.getTotalPages());
             System.out.println("Users on this page: " + usersPage.getContent().size());
+            System.out.println("Current user email: " + authentication.getName());
             System.out.println("==================");
 
         } else if ("ongs".equals(view)) {
@@ -88,13 +90,19 @@ public class AdminController {
     }
 
     @PostMapping("/users/delete/{id}")
-    public String deleteUser(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
+    public String deleteUser(@PathVariable Integer id, RedirectAttributes redirectAttributes, Authentication authentication) {
         try {
-            boolean deleted = adminService.deleteUser(id);
+            String currentUserEmail = authentication.getName();
+            boolean deleted = adminService.deleteUser(id, currentUserEmail);
             if (deleted) {
                 redirectAttributes.addFlashAttribute("successMessage", "User deleted successfully!");
             } else {
-                redirectAttributes.addFlashAttribute("errorMessage", "User not found!");
+                User userToDelete = adminService.getUserById(id);
+                if (userToDelete != null && userToDelete.getEmail().equals(currentUserEmail)) {
+                    redirectAttributes.addFlashAttribute("errorMessage", "You cannot delete your own account!");
+                } else {
+                    redirectAttributes.addFlashAttribute("errorMessage", "User not found!");
+                }
             }
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Error deleting user: " + e.getMessage());
