@@ -50,6 +50,14 @@ public class AdminService {
         return userRepository.findAll(pageable);
     }
 
+    public Page<User> getUsersPageByRoles(int page, int size, List<User.Role> roles) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("idUser").ascending());
+        if (roles == null || roles.isEmpty()) {
+            return userRepository.findAll(pageable);
+        }
+        return userRepository.findByRoleIn(roles, pageable);
+    }
+
     // CRUD pentru Users
     public User createUser(User user) {
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {

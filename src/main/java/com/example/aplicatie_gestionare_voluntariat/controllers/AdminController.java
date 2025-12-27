@@ -11,6 +11,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
@@ -22,6 +25,7 @@ public class AdminController {
     public String adminDashboard(
             @RequestParam(required = false) String view,
             @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) List<String> roles,
             Model model,
             Authentication authentication) {
 
@@ -35,7 +39,18 @@ public class AdminController {
 
         // Încarcă datele în funcție de parametrul view
         if ("users".equals(view)) {
-            Page<User> usersPage = adminService.getUsersPage(page, 50);
+            Page<User> usersPage;
+
+            if (roles != null && !roles.isEmpty()) {
+                // Convert String roles to User.Role enum
+                List<User.Role> roleEnums = roles.stream()
+                        .map(User.Role::valueOf)
+                        .collect(Collectors.toList());
+                usersPage = adminService.getUsersPageByRoles(page, 50, roleEnums);
+            } else {
+                usersPage = adminService.getUsersPage(page, 50);
+            }
+
             model.addAttribute("usersPage", usersPage);
             model.addAttribute("currentPage", page);
 
@@ -43,6 +58,7 @@ public class AdminController {
             System.out.println("=== DEBUG INFO ===");
             System.out.println("View: " + view);
             System.out.println("Current page: " + page);
+            System.out.println("Filtered roles: " + roles);
             System.out.println("Total users: " + usersPage.getTotalElements());
             System.out.println("Total pages: " + usersPage.getTotalPages());
             System.out.println("Users on this page: " + usersPage.getContent().size());
@@ -97,13 +113,10 @@ public class AdminController {
             if (deleted) {
                 redirectAttributes.addFlashAttribute("successMessage", "User deleted successfully!");
             } else {
-                User userToDelete = adminService.getUserById(id);
-                if (userToDelete != null && userToDelete.getEmail().equals(currentUserEmail)) {
-                    redirectAttributes.addFlashAttribute("errorMessage", "You cannot delete your own account!");
-                } else {
-                    redirectAttributes.addFlashAttribute("errorMessage", "User not found!");
-                }
+                redirectAttributes.addFlashAttribute("errorMessage", "User not found!");
             }
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Error deleting user: " + e.getMessage());
             e.printStackTrace(); // Debug
