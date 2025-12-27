@@ -87,9 +87,9 @@ public class AdminService {
             return false;
         }
 
-        // Verifică dacă adminul încearcă să se șteargă pe sine
-        if (userToDelete.getEmail().equals(currentUserEmail)) {
-            throw new IllegalStateException("You cannot delete your own account!");
+        // Verifică dacă utilizatorul de șters este admin
+        if (userToDelete.getRole() == User.Role.admin) {
+            throw new IllegalStateException("Admin accounts cannot be deleted for security reasons!");
         }
 
         userRepository.deleteById(id);

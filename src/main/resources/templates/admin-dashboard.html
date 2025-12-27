@@ -519,9 +519,10 @@
                             <button class="btn-delete"
                                     th:data-user-id="${user.id_user}"
                                     th:data-user-email="${user.email}"
-                                    th:disabled="${user.email == currentUserEmail}"
-                                    th:title="${user.email == currentUserEmail} ? 'You cannot delete your own account' : 'Delete user'"
-                                    onclick="confirmDelete(this.getAttribute('data-user-id'), this.getAttribute('data-user-email'))">
+                                    th:data-user-role="${user.role}"
+                                    th:disabled="${user.role.name() == 'admin'}"
+                                    th:title="${user.role.name() == 'admin'} ? 'Cannot delete admin accounts' : 'Delete user'"
+                                    onclick="confirmDelete(this.getAttribute('data-user-id'), this.getAttribute('data-user-email'), this.getAttribute('data-user-role'))">
                                 🗑️ Delete
                             </button>
                         </div>
@@ -775,9 +776,9 @@
     }
 
     // Delete Confirmation
-    function confirmDelete(userId, userEmail) {
-        if (userEmail === currentUserEmail) {
-            alert('⚠️ You cannot delete your own account!');
+    function confirmDelete(userId, userEmail, userRole) {
+        if (userRole === 'admin') {
+            alert('⚠️ Admin accounts cannot be deleted for security reasons!');
             return;
         }
 
