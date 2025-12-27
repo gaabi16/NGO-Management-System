@@ -500,8 +500,8 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="user : ${usersPage.content}">
-                    <td th:text="${user.id_user}"></td>
+                <tr th:each="user, iterStat : ${usersPage.content}">
+                    <td th:text="${currentPage * 50 + iterStat.index + 1}"></td>
                     <td th:text="${user.first_name + ' ' + user.last_name}"></td>
                     <td th:text="${user.email}"></td>
                     <td th:text="${user.phone_number ?: 'N/A'}"></td>
