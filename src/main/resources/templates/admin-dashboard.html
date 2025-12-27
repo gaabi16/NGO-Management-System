@@ -417,6 +417,159 @@
             font-weight: normal;
         }
 
+        /* Filter Section */
+        .filter-section {
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .btn-filter {
+            padding: 12px 20px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-filter:hover {
+            background: #f0f0f0;
+        }
+
+        .filter-arrow {
+            font-size: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .filter-arrow.rotate {
+            transform: rotate(180deg);
+        }
+
+        .filter-menu {
+            display: none;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            animation: slideDownFilter 0.3s ease;
+        }
+
+        .filter-menu.active {
+            display: block;
+        }
+
+        @keyframes slideDownFilter {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .filter-group {
+            margin-bottom: 20px;
+        }
+
+        .filter-label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .filter-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-option {
+            padding: 10px 16px;
+            background: #f5f5f5;
+            color: #333;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-option:hover {
+            background: #e8e8e8;
+            border-color: #667eea;
+        }
+
+        .filter-option.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .checkbox {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .filter-option.active .checkbox::before {
+            content: '☑';
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .btn-apply-filter,
+        .btn-clear-filter {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-apply-filter {
+            background: #28a745;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-apply-filter:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+
+        .btn-clear-filter {
+            background: #6c757d;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-clear-filter:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
         @media (max-width: 768px) {
             .button-group {
                 flex-direction: column;
@@ -488,6 +641,35 @@
                 <button class="btn-create" onclick="openCreateModal()">➕ Create User</button>
             </div>
 
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <button class="btn-filter" onclick="toggleFilterMenu()">
+                    🔍 Filter Users
+                    <span class="filter-arrow">▼</span>
+                </button>
+
+                <div id="filterMenu" class="filter-menu">
+                    <div class="filter-group">
+                        <label class="filter-label">Filter by Role:</label>
+                        <div class="filter-options">
+                            <button class="filter-option" data-role="volunteer" onclick="toggleRoleFilter('volunteer')">
+                                <span class="checkbox">☐</span> Volunteer
+                            </button>
+                            <button class="filter-option" data-role="coordinator" onclick="toggleRoleFilter('coordinator')">
+                                <span class="checkbox">☐</span> Coordinator
+                            </button>
+                            <button class="filter-option" data-role="admin" onclick="toggleRoleFilter('admin')">
+                                <span class="checkbox">☐</span> Admin
+                            </button>
+                        </div>
+                    </div>
+                    <div class="filter-actions">
+                        <button class="btn-apply-filter" onclick="applyFilters()">Apply Filters</button>
+                        <button class="btn-clear-filter" onclick="clearFilters()">Clear All</button>
+                    </div>
+                </div>
+            </div>
+
             <table th:if="${usersPage != null && usersPage.content.size() > 0}">
                 <thead>
                 <tr>
@@ -500,8 +682,8 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="user : ${usersPage.content}">
-                    <td th:text="${user.id_user}"></td>
+                <tr th:each="user, iterStat : ${usersPage.content}">
+                    <td th:text="${currentPage * 50 + iterStat.index + 1}"></td>
                     <td th:text="${user.first_name + ' ' + user.last_name}"></td>
                     <td th:text="${user.email}"></td>
                     <td th:text="${user.phone_number ?: 'N/A'}"></td>
@@ -519,9 +701,10 @@
                             <button class="btn-delete"
                                     th:data-user-id="${user.id_user}"
                                     th:data-user-email="${user.email}"
-                                    th:disabled="${user.email == currentUserEmail}"
-                                    th:title="${user.email == currentUserEmail} ? 'You cannot delete your own account' : 'Delete user'"
-                                    onclick="confirmDelete(this.getAttribute('data-user-id'), this.getAttribute('data-user-email'))">
+                                    th:data-user-role="${user.role}"
+                                    th:disabled="${user.role.name() == 'admin'}"
+                                    th:title="${user.role.name() == 'admin'} ? 'Cannot delete admin accounts' : 'Delete user'"
+                                    onclick="confirmDelete(this.getAttribute('data-user-id'), this.getAttribute('data-user-email'), this.getAttribute('data-user-role'))">
                                 🗑️ Delete
                             </button>
                         </div>
@@ -552,7 +735,7 @@
                 <!-- Ellipsis before -->
                 <span th:if="${currentPage > 3}">...</span>
 
-                <!-- Pages around current (simplified approach) -->
+                <!-- Pages around current -->
                 <th:block th:if="${currentPage >= 2}">
                     <a th:href="@{/admin/dashboard(view='users', page=${currentPage - 2})}"
                        th:text="${currentPage - 1}">
@@ -599,7 +782,7 @@
             </div>
         </div>
 
-        <!-- ONGs Table (unchanged) -->
+        <!-- ONGs Table -->
         <div th:if="${currentView == 'ongs'}">
             <h2 class="table-title">🏢 First 5 ONGs</h2>
             <table>
@@ -624,7 +807,7 @@
             </table>
         </div>
 
-        <!-- Coordinators Table (unchanged) -->
+        <!-- Coordinators Table -->
         <div th:if="${currentView == 'coordinators'}">
             <h2 class="table-title">📋 First 5 Coordinators</h2>
             <table>
@@ -744,7 +927,66 @@
 <script th:inline="javascript">
     /*<![CDATA[*/
     var currentUserEmail = /*[[${currentUserEmail}]]*/ '';
+    var selectedRoles = [];
     /*]]>*/
+
+    // Filter Menu Toggle
+    function toggleFilterMenu() {
+        const menu = document.getElementById('filterMenu');
+        const arrow = document.querySelector('.filter-arrow');
+        menu.classList.toggle('active');
+        arrow.classList.toggle('rotate');
+    }
+
+    // Toggle Role Filter
+    function toggleRoleFilter(role) {
+        const button = document.querySelector(`.filter-option[data-role="${role}"]`);
+        button.classList.toggle('active');
+
+        const index = selectedRoles.indexOf(role);
+        if (index > -1) {
+            selectedRoles.splice(index, 1);
+        } else {
+            selectedRoles.push(role);
+        }
+    }
+
+    // Apply Filters
+    function applyFilters() {
+        if (selectedRoles.length === 0) {
+            window.location.href = '/admin/dashboard?view=users';
+            return;
+        }
+
+        const params = new URLSearchParams();
+        params.append('view', 'users');
+        selectedRoles.forEach(role => params.append('roles', role));
+
+        window.location.href = '/admin/dashboard?' + params.toString();
+    }
+
+    // Clear Filters
+    function clearFilters() {
+        selectedRoles = [];
+        document.querySelectorAll('.filter-option').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        window.location.href = '/admin/dashboard?view=users';
+    }
+
+    // Initialize filters from URL on page load
+    window.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const rolesFromUrl = urlParams.getAll('roles');
+
+        rolesFromUrl.forEach(role => {
+            selectedRoles.push(role);
+            const button = document.querySelector(`.filter-option[data-role="${role}"]`);
+            if (button) {
+                button.classList.add('active');
+            }
+        });
+    });
 
     // Create Modal
     function openCreateModal() {
@@ -775,9 +1017,9 @@
     }
 
     // Delete Confirmation
-    function confirmDelete(userId, userEmail) {
-        if (userEmail === currentUserEmail) {
-            alert('⚠️ You cannot delete your own account!');
+    function confirmDelete(userId, userEmail, userRole) {
+        if (userRole === 'admin') {
+            alert('⚠️ Admin accounts cannot be deleted for security reasons!');
             return;
         }
 
